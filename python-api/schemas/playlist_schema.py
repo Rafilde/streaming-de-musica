@@ -18,3 +18,8 @@ class PlaylistCompleta(BaseModel):
     id: int
     nome: str
     musicas: List[MusicaSimples] = []
+
+class PlaylistResposta(BaseModel):
+    id: int
+    nome: str
+    usuario_id: str

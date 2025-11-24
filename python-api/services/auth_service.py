@@ -53,3 +53,11 @@ def cadastrar_usuario(email: str, senha: str, nome: str, idade: int):
 
     except Exception as e:
         raise Exception(f"Erro ao registrar: {str(e)}")
+
+
+def listar_todos_usuarios():
+    try:
+        res = db.table("usuario").select("id, nome, idade").execute()
+        return res.data
+    except Exception as e:
+        raise Exception(f"Erro ao listar usuários: {str(e)}")

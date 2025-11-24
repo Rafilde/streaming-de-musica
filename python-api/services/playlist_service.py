@@ -73,3 +73,22 @@ def listar_playlists_usuario_com_musicas(usuario_id: str):
         
     except Exception as e:
         raise Exception(f"Erro ao listar do usuário: {str(e)}")
+    
+
+def listar_playlists_com_musica(musica_id: int):
+    try:
+        query = "playlist_id, playlist(id, nome, usuario_id)"
+        
+        res = db.table("playlist_musica")\
+            .select(query)\
+            .eq("musica_id", musica_id)\
+            .execute()
+            
+        playlists = []
+        for item in res.data:
+            if item.get("playlist"):
+                playlists.append(item["playlist"])
+                
+        return playlists
+    except Exception as e:
+        raise Exception(f"Erro ao buscar playlists da música: {str(e)}")
