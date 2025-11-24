@@ -1,14 +1,14 @@
 from  database import db
 from supabase import AuthApiError
 
-def register_music(name: str, artist: str):
+def cadastrar_musica(nome: str, artista: str):
     """
     Registra uma nova música na tabela Musica.
     """
     try:
         dados_musica = {
-            "nome": name,
-            "artista": artist
+            "nome": nome,
+            "artista": artista
         }
         
         res_db = db.table("musica").insert(dados_musica).execute()
@@ -20,7 +20,7 @@ def register_music(name: str, artist: str):
     except Exception as e:
         raise Exception(f"Erro ao registrar música: {str(e)}")
     
-def get_all_music():
+def obter_todas_musicas():
     """
     Retorna todas as músicas da tabela Musica.
     """

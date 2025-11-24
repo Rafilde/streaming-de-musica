@@ -1,58 +1,58 @@
 from fastapi import FastAPI, HTTPException
 from typing import List 
-from schemas.auth_schema import UserRegister, UserAuth, UserResponse
-from services.auth_service import register_user, authenticate_user
-from schemas.music_schema import MusicResponse, MusicRegister
-from services.music_service import register_music, get_all_music
+from schemas.auth_schema import UsuarioRegistro, UsuarioAutenticacao, UsuarioResposta
+from services.auth_service import autenticar_usuario, cadastrar_usuario
+from schemas.music_schema import MusicaCadastro, MusicaResposta
+from services.music_service import cadastrar_musica, obter_todas_musicas
 
 app = FastAPI(title="API Streaming Music")
 
-@app.post("/auth/register", response_model=UserResponse)
-def register(user: UserRegister):
+@app.post("/auth/register", response_model=UsuarioResposta)
+def cadastro(user: UsuarioRegistro):
     try:
-        result = register_user(
+        resultado = cadastrar_usuario(
             email=user.email,
-            password=user.password,
-            username=user.username,
-            age=user.age
+            senha=user.senha,
+            nome=user.nome,
+            idade=user.idade
         )
 
-        return UserResponse(
+        return UsuarioResposta(
             status="Success",
-            message="Usuário criado com sucesso",
-            data=result
+            mensagem="Usuário criado com sucesso",
+            dado=resultado
         )
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/auth/login", response_model=UserResponse)
-def login(user: UserAuth):
+@app.post("/auth/login", response_model=UsuarioResposta)
+def login(user: UsuarioAutenticacao):
     try:
-        result = authenticate_user(
+        resultado = autenticar_usuario(
             email=user.email,
-            password=user.password
+            senha=user.senha
         )
 
-        return UserResponse(
+        return UsuarioResposta(
             status="Success",
-            message="Login realizado",
-            data=result
+            mensagem="Login realizado",
+            dado=resultado
         )
 
     except Exception as e:
         raise HTTPException(status_code=401, detail="Email ou senha inválidos")
 
-@app.post("/musicas", response_model=MusicResponse)
-def criar_musica(musica: MusicRegister):
+@app.post("/musicas", response_model=MusicaResposta)
+def criar_musica(musica: MusicaCadastro):
     try:
-        return register_music(musica.name, musica.artist)
+        return cadastrar_musica(musica.nome, musica.artista)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/musicas", response_model=List[MusicResponse])
+@app.get("/musicas", response_model=List[MusicaResposta])
 def listar_musicas():
     try:
-        return get_all_music()
+        return obter_todas_musicas()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
