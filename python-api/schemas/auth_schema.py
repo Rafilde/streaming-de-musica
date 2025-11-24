@@ -1,17 +1,17 @@
 from pydantic import BaseModel
 
-class UserAuth(BaseModel):
+class UsuarioLogin(BaseModel):
     email: str
-    password: str
+    senha: str
 
-class UserRegister(BaseModel):
+class UsuarioRegistro(BaseModel):
     email: str
-    password: str
-    username: str
-    age: int
+    senha: str
+    nome: str
+    idade: int
 
-class UserResponse(BaseModel):
+class UsuarioResposta(BaseModel):
     status: str
-    message: str
-    data: dict | None = None
+    mensagem: str
+    dado: dict | None = None
 
