@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="MusicStreamingService"
+             targetNamespace="http://localhost:5000/wsdl"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://localhost:5000/wsdl"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <message name="StringRequest">
+    <part name="id" type="xsd:string"/>
+  </message>
+
+  <message name="IntRequest">
+    <part name="id" type="xsd:int"/>
+  </message>
+
+  <message name="UsuarioRequest">
+    <part name="id" type="xsd:string"/>
+    <part name="nome" type="xsd:string"/>
+    <part name="idade" type="xsd:int"/>
+  </message>
+
+  <message name="PlaylistRequest">
+    <part name="id" type="xsd:int"/>
+    <part name="nome" type="xsd:string"/>
+    <part name="usuario_id" type="xsd:string"/>
+  </message>
+
+  <message name="MusicaRequest">
+    <part name="id" type="xsd:int"/>
+    <part name="nome" type="xsd:string"/>
+    <part name="artista" type="xsd:string"/>
+  </message>
+
+  <message name="PlaylistMusicaRequest">
+    <part name="id" type="xsd:int"/>
+    <part name="playlist_id" type="xsd:int"/>
+    <part name="musica_id" type="xsd:int"/>
+  </message>
+
+  <message name="Response">
+    <part name="result" type="xsd:string"/>
+  </message>
+
+  <message name="EmptyRequest"/>
+
+  <portType name="MusicStreamingServiceSoapPort">
+    <!-- Usuario operations -->
+    <operation name="createUsuario">
+      <input message="tns:UsuarioRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="getUsuarios">
+      <input message="tns:EmptyRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="getUsuario">
+      <input message="tns:StringRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="updateUsuario">
+      <input message="tns:UsuarioRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="deleteUsuario">
+      <input message="tns:StringRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+
+    <!-- Playlist operations -->
+    <operation name="createPlaylist">
+      <input message="tns:PlaylistRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="getPlaylists">
+      <input message="tns:EmptyRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="getPlaylist">
+      <input message="tns:IntRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="updatePlaylist">
+      <input message="tns:PlaylistRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="deletePlaylist">
+      <input message="tns:IntRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+
+    <!-- Musica operations -->
+    <operation name="createMusica">
+      <input message="tns:MusicaRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="getMusicas">
+      <input message="tns:EmptyRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="getMusica">
+      <input message="tns:IntRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="updateMusica">
+      <input message="tns:MusicaRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="deleteMusica">
+      <input message="tns:IntRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+
+    <!-- PlaylistMusica operations -->
+    <operation name="createPlaylistMusica">
+      <input message="tns:PlaylistMusicaRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="getPlaylistMusicas">
+      <input message="tns:EmptyRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="getPlaylistMusica">
+      <input message="tns:IntRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="getMusicasByPlaylist">
+      <input message="tns:IntRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="updatePlaylistMusica">
+      <input message="tns:PlaylistMusicaRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+    <operation name="deletePlaylistMusica">
+      <input message="tns:IntRequest"/>
+      <output message="tns:Response"/>
+    </operation>
+  </portType>
+
+  <binding name="MusicStreamingServiceSoapBinding" type="tns:MusicStreamingServiceSoapPort">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    
+    <!-- Usuario operations -->
+    <operation name="createUsuario">
+      <soap:operation soapAction="createUsuario"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="getUsuarios">
+      <soap:operation soapAction="getUsuarios"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="getUsuario">
+      <soap:operation soapAction="getUsuario"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="updateUsuario">
+      <soap:operation soapAction="updateUsuario"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="deleteUsuario">
+      <soap:operation soapAction="deleteUsuario"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+
+    <!-- Playlist operations -->
+    <operation name="createPlaylist">
+      <soap:operation soapAction="createPlaylist"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="getPlaylists">
+      <soap:operation soapAction="getPlaylists"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="getPlaylist">
+      <soap:operation soapAction="getPlaylist"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="updatePlaylist">
+      <soap:operation soapAction="updatePlaylist"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="deletePlaylist">
+      <soap:operation soapAction="deletePlaylist"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+
+    <!-- Musica operations -->
+    <operation name="createMusica">
+      <soap:operation soapAction="createMusica"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="getMusicas">
+      <soap:operation soapAction="getMusicas"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="getMusica">
+      <soap:operation soapAction="getMusica"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="updateMusica">
+      <soap:operation soapAction="updateMusica"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="deleteMusica">
+      <soap:operation soapAction="deleteMusica"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+
+    <!-- PlaylistMusica operations -->
+    <operation name="createPlaylistMusica">
+      <soap:operation soapAction="createPlaylistMusica"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="getPlaylistMusicas">
+      <soap:operation soapAction="getPlaylistMusicas"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="getPlaylistMusica">
+      <soap:operation soapAction="getPlaylistMusica"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="getMusicasByPlaylist">
+      <soap:operation soapAction="getMusicasByPlaylist"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="updatePlaylistMusica">
+      <soap:operation soapAction="updatePlaylistMusica"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+    <operation name="deletePlaylistMusica">
+      <soap:operation soapAction="deletePlaylistMusica"/>
+      <input><soap:body use="literal"/></input>
+      <output><soap:body use="literal"/></output>
+    </operation>
+  </binding>
+
+  <service name="MusicStreamingService">
+    <documentation>Music Streaming SOAP Service</documentation>
+    <port name="MusicStreamingServiceSoapPort" binding="tns:MusicStreamingServiceSoapBinding">
+      <soap:address location="http://localhost:5000/wsdl"/>
+    </port>
+  </service>
+</definitions>

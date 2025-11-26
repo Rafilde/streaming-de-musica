@@ -1,0 +1,37 @@
+{
+  "name": "streaming-music-api",
+  "version": "1.0.0",
+  "description": "Music streaming API with REST, GraphQL, SOAP and gRPC",
+  "main": "index.js",
+  "scripts": {
+    "start:rest": "node src/rest/server.js",
+    "start:graphql": "node src/graphql/server.js",
+    "start:soap": "node src/soap/server.js",
+    "start:grpc": "node src/grpc/server.js",
+    "dev:rest": "nodemon src/rest/server.js",
+    "dev:graphql": "nodemon src/graphql/server.js",
+    "dev:soap": "nodemon src/soap/server.js",
+    "dev:grpc": "nodemon src/grpc/server.js",
+    "test": "node test/api-test.js"
+  },
+  "keywords": ["rest", "graphql", "soap", "grpc", "music", "streaming"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "apollo-server-express": "^3.13.0",
+    "graphql": "^16.8.1",
+    "soap": "^1.0.0",
+    "strong-soap": "^2.1.0",
+    "@grpc/grpc-js": "^1.9.13",
+    "@grpc/proto-loader": "^0.7.10",
+    "body-parser": "^1.20.2",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
