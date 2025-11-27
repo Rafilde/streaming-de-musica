@@ -1,10 +1,12 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from typing import List 
-from schemas.auth_schema import UsuarioRegistro, UsuarioAutenticacao, UsuarioResposta
+from strawberry.fastapi import GraphQLRouter
+from schemas.REST.auth_schema import UsuarioRegistro, UsuarioAutenticacao, UsuarioResposta
 from services.auth_service import autenticar_usuario, cadastrar_usuario, listar_todos_usuarios
-from schemas.music_schema import MusicaCadastro, MusicaResposta
+from schemas.REST.music_schema import MusicaCadastro, MusicaResposta
 from services.music_service import cadastrar_musica, obter_todas_musicas
-from schemas.playlist_schema import (
+from schemas.REST.playlist_schema import (
     PlaylistCadastro, 
     AdicionarMusicaPlaylist, 
     PlaylistCompleta, 
@@ -16,8 +18,20 @@ from services.playlist_service import (
     obter_playlist_detalhada,        
     listar_playlists_usuario_com_musicas, listar_playlists_com_musica 
 )
+from schemas.GRAPHQL.graphql_schema import schema
 
 app = FastAPI(title="API Streaming Music")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+graphql_app = GraphQLRouter(schema, path="/graphql")
+app.include_router(graphql_app)
 
 @app.post("/auth/register", response_model=UsuarioResposta)
 def cadastro(user: UsuarioRegistro):
