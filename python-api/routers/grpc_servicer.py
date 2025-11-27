@@ -8,22 +8,18 @@ class StreamingServicer(streaming_pb2_grpc.StreamingServiceServicer):
     Aqui conectamos o contrato (.proto) com seus Services Python existentes.
     """
 
-    # --- AUTENTICAÇÃO E USUÁRIOS ---
-
     def RegistrarUsuario(self, request, context):
         try:
-            # Chama seu serviço existente
             resultado = auth_service.cadastrar_usuario(
                 email=request.email,
                 senha=request.senha,
                 nome=request.nome,
                 idade=request.idade
             )
-            # Converte o dict de resposta para a mensagem gRPC Usuario
             return streaming_pb2.Usuario(
                 id=str(resultado["id"]),
                 nome=resultado["nome"],
-                email=request.email, # O serviço de cadastro não retorna email, pegamos do input
+                email=request.email, 
                 idade=request.idade
             )
         except Exception as e:
@@ -31,11 +27,9 @@ class StreamingServicer(streaming_pb2_grpc.StreamingServiceServicer):
 
     def Login(self, request, context):
         try:
-            # Seu serviço retorna: {'id': '...', 'info': {'nome': '...', 'idade': ...}}
             resultado = auth_service.autenticar_usuario(request.email, request.senha)
             dados_info = resultado.get("info", {})
 
-            # Achatamos os dados para a mensagem Usuario
             return streaming_pb2.Usuario(
                 id=str(resultado["id"]),
                 nome=dados_info.get("nome", "Desconhecido"),
@@ -50,20 +44,16 @@ class StreamingServicer(streaming_pb2_grpc.StreamingServiceServicer):
             usuarios_db = auth_service.listar_todos_usuarios()
             lista_proto = []
             for u in usuarios_db:
-                # Cria objeto Usuario para cada item da lista
                 user_proto = streaming_pb2.Usuario(
                     id=str(u["id"]),
                     nome=u["nome"],
                     idade=u["idade"]
-                    # email não vem na listagem padrão do seu service, ok deixar vazio
                 )
                 lista_proto.append(user_proto)
             
             return streaming_pb2.ListaUsuarios(usuarios=lista_proto)
         except Exception as e:
             context.abort(grpc.StatusCode.INTERNAL, str(e))
-
-    # --- MÚSICAS ---
 
     def CriarMusica(self, request, context):
         try:
@@ -86,8 +76,6 @@ class StreamingServicer(streaming_pb2_grpc.StreamingServiceServicer):
             return streaming_pb2.ListaMusicas(musicas=lista)
         except Exception as e:
             context.abort(grpc.StatusCode.INTERNAL, str(e))
-
-    # --- PLAYLISTS ---
 
     def CriarPlaylist(self, request, context):
         try:
@@ -112,12 +100,10 @@ class StreamingServicer(streaming_pb2_grpc.StreamingServiceServicer):
 
     def ObterPlaylist(self, request, context):
         try:
-            # Esse serviço retorna dict com lista aninhada de musicas
             dados = playlist_service.obter_playlist_detalhada(request.id)
             if not dados:
                 context.abort(grpc.StatusCode.NOT_FOUND, "Playlist não encontrada")
 
-            # Converter lista de dicts para lista de objetos Musica gRPC
             musicas_proto = [
                 streaming_pb2.Musica(id=m["id"], nome=m["nome"], artista=m["artista"])
                 for m in dados.get("musicas", [])
@@ -127,7 +113,7 @@ class StreamingServicer(streaming_pb2_grpc.StreamingServiceServicer):
                 id=dados["id"],
                 nome=dados["nome"],
                 usuario_id=dados.get("usuario_id", ""),
-                musicas=musicas_proto # Campo repeated preenchido
+                musicas=musicas_proto 
             )
         except Exception as e:
             context.abort(grpc.StatusCode.INTERNAL, str(e))
@@ -138,7 +124,6 @@ class StreamingServicer(streaming_pb2_grpc.StreamingServiceServicer):
             lista_final = []
             
             for p in playlists:
-                # Para cada playlist, converte suas músicas internas também
                 musicas_proto = [
                     streaming_pb2.Musica(id=m["id"], nome=m["nome"], artista=m["artista"])
                     for m in p.get("musicas", [])
@@ -158,7 +143,6 @@ class StreamingServicer(streaming_pb2_grpc.StreamingServiceServicer):
     def ListarPlaylistsDaMusica(self, request, context):
         try:
             playlists = playlist_service.listar_playlists_com_musica(request.id)
-            # Essa função do service retorna playlists sem as músicas dentro
             lista = [
                 streaming_pb2.Playlist(
                     id=p["id"], 

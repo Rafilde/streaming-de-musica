@@ -2,12 +2,8 @@ syntax = "proto3";
 
 package streaming;
 
-// --- MENSAGENS (TIPOS DE DADOS) ---
-
-// Usado para respostas vazias (equivalente a None)
 message Empty {}
 
-// Retorno padrão de sucesso para operações de escrita
 message MensagemSucesso {
   string status = 1;
   string mensagem = 2;
@@ -34,7 +30,6 @@ message Playlist {
   repeated Musica musicas = 4; 
 }
 
-// Inputs para as requisições
 message RegistrarUsuarioRequest {
   string email = 1;
   string senha = 2;
@@ -83,15 +78,11 @@ message ListaPlaylists {
   repeated Playlist playlists = 1;
 }
 
-// --- DEFINIÇÃO DO SERVIÇO (RPCs) ---
-
 service StreamingService {
-  // Autenticação e Usuários
   rpc RegistrarUsuario (RegistrarUsuarioRequest) returns (Usuario);
   rpc Login (LoginRequest) returns (Usuario);
   rpc ListarUsuarios (Empty) returns (ListaUsuarios);
 
-  // Músicas
   rpc CriarMusica (CriarMusicaRequest) returns (Musica);
   rpc ListarMusicas (Empty) returns (ListaMusicas);
 
