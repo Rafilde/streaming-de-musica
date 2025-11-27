@@ -3,7 +3,9 @@ Router para rotas de Autenticação
 """
 from fastapi import APIRouter, HTTPException
 from schemas.REST.auth_schema import UsuarioRegistro, UsuarioAutenticacao, UsuarioResposta
+from schemas.REST.playlist_schema import PlaylistCompleta
 from services.auth_service import autenticar_usuario, cadastrar_usuario, listar_todos_usuarios
+from services.playlist_service import listar_playlists_usuario_com_musicas
 from typing import List
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
@@ -54,5 +56,14 @@ def get_todos_usuarios():
     """Lista todos os usuários"""
     try:
         return listar_todos_usuarios()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/usuarios/{usuario_id}/playlists_detalhadas", response_model=List[PlaylistCompleta])
+def ver_playlists_do_usuario(usuario_id: str):
+    """Retorna todas as playlists de um usuário específico com suas músicas (rota legada)"""
+    try:
+        return listar_playlists_usuario_com_musicas(usuario_id)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

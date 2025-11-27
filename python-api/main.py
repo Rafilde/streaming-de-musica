@@ -1,26 +1,24 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List 
 from strawberry.fastapi import GraphQLRouter
-from schemas.REST.auth_schema import UsuarioRegistro, UsuarioAutenticacao, UsuarioResposta
-from services.auth_service import autenticar_usuario, cadastrar_usuario, listar_todos_usuarios
-from schemas.REST.music_schema import MusicaCadastro, MusicaResposta
-from services.music_service import cadastrar_musica, obter_todas_musicas
-from schemas.REST.playlist_schema import (
-    PlaylistCadastro, 
-    AdicionarMusicaPlaylist, 
-    PlaylistCompleta, 
-    PlaylistResposta
-)
-from services.playlist_service import (
-    criar_playlist_servico, 
-    adicionar_musica_servico,
-    obter_playlist_detalhada,        
-    listar_playlists_usuario_com_musicas, listar_playlists_com_musica 
-)
 from schemas.GRAPHQL.graphql_schema import schema
+from routers.auth_router import router as auth_router
+from routers.music_router import router as music_router
+from routers.playlist_router import router as playlist_router
 
-app = FastAPI(title="API Streaming Music")
+# ============================================================================
+# Inicializar aplicação
+# ============================================================================
+
+app = FastAPI(
+    title="API Streaming Music",
+    description="Backend para serviço de streaming de músicas com REST e GraphQL",
+    version="1.0.0"
+)
+
+# ============================================================================
+# Middleware CORS
+# ============================================================================
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,105 +28,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ============================================================================
+# Integrar GraphQL
+# ============================================================================
+
 graphql_app = GraphQLRouter(schema, path="/graphql")
 app.include_router(graphql_app)
 
-@app.post("/auth/register", response_model=UsuarioResposta)
-def cadastro(user: UsuarioRegistro):
-    try:
-        resultado = cadastrar_usuario(
-            email=user.email,
-            senha=user.senha,
-            nome=user.nome,
-            idade=user.idade
-        )
+# ============================================================================
+# Integrar Routers REST
+# ============================================================================
 
-        return UsuarioResposta(
-            status="Success",
-            mensagem="Usuário criado com sucesso",
-            dado=resultado
-        )
+app.include_router(auth_router)
+app.include_router(music_router)
+app.include_router(playlist_router)
 
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+# ============================================================================
+# Rota raiz
+# ============================================================================
 
-@app.post("/auth/login", response_model=UsuarioResposta)
-def login(user: UsuarioAutenticacao):
-    try:
-        resultado = autenticar_usuario(
-            email=user.email,
-            senha=user.senha
-        )
-
-        return UsuarioResposta(
-            status="Success",
-            mensagem="Login realizado",
-            dado=resultado
-        )
-
-    except Exception as e:
-        raise HTTPException(status_code=401, detail="Email ou senha inválidos")
+@app.get("/")
+def root():
+    """
+    Raiz da API - Bem-vindo!
     
-@app.get("/usuarios/{usuario_id}/playlists_detalhadas", response_model=List[PlaylistCompleta])
-def ver_playlists_do_usuario(usuario_id: str):
-    try:
-        return listar_playlists_usuario_com_musicas(usuario_id)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@app.get("/usuarios", response_model=List[dict]) 
-def get_todos_usuarios():
-    try:
-        return listar_todos_usuarios()
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    
-#---------------------------------------------------------------------------------------------------------------
-
-@app.post("/musicas", response_model=MusicaResposta)
-def criar_musica(musica: MusicaCadastro):
-    try:
-        return cadastrar_musica(musica.nome, musica.artista)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@app.get("/musicas", response_model=List[MusicaResposta])
-def listar_musicas():
-    try:
-        return obter_todas_musicas()
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    
-@app.get("/musicas/{musica_id}/playlists", response_model=List[PlaylistResposta])
-def get_playlists_da_musica(musica_id: int):
-    try:
-        return listar_playlists_com_musica(musica_id)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    
-#---------------------------------------------------------------------------------------------------------------
-
-@app.post("/playlists")
-def criar(p: PlaylistCadastro):
-    try:
-        return criar_playlist_servico(p.nome, p.usuario_id)
-    except Exception as e:
-        raise HTTPException(400, str(e))
-
-@app.post("/playlists/adicionar")
-def add_musica(d: AdicionarMusicaPlaylist):
-    try:
-        adicionar_musica_servico(d.playlist_id, d.musica_id)
-        return {"status": "OK", "mensagem": "Adicionado!"}
-    except Exception as e:
-        raise HTTPException(400, str(e))
-
-@app.get("/playlists/{playlist_id}", response_model=PlaylistCompleta)
-def ver_playlist(playlist_id: int):
-    try:
-        resultado = obter_playlist_detalhada(playlist_id)
-        if not resultado:
-            raise HTTPException(status_code=404, detail="Playlist não encontrada")
-        return resultado
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    Acesse:
+    - REST Docs: http://localhost:8000/docs
+    - GraphQL: http://localhost:8000/graphql
+    - ReDoc: http://localhost:8000/redoc
+    """
+    return {
+        "mensagem": "Bem-vindo à API Streaming Music",
+        "endpoints": {
+            "docs_swagger": "http://localhost:8000/docs",
+            "graphql": "http://localhost:8000/graphql",
+            "redoc": "http://localhost:8000/redoc",
+            "autenticacao": "/auth",
+            "musicas": "/musicas",
+            "playlists": "/playlists"
+        }
+    }

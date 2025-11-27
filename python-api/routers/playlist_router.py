@@ -54,7 +54,7 @@ def obter_playlist(playlist_id: int):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/usuario/{usuario_id}")
+@router.get("/usuario/{usuario_id}", response_model=List[PlaylistCompleta])
 def obter_playlists_usuario(usuario_id: str):
     """Retorna todas as playlists de um usuário com suas músicas"""
     try:
