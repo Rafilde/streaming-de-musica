@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package streaming;
+
+// --- MENSAGENS (TIPOS DE DADOS) ---
+
+// Usado para respostas vazias (equivalente a None)
+message Empty {}
+
+// Retorno padrão de sucesso para operações de escrita
+message MensagemSucesso {
+  string status = 1;
+  string mensagem = 2;
+}
+
+message Usuario {
+  string id = 1;
+  string nome = 2;
+  int32 idade = 3;
+  string email = 4;
+}
+
+message Musica {
+  int32 id = 1;
+  string nome = 2;
+  string artista = 3;
+}
+
+message Playlist {
+  int32 id = 1;
+  string nome = 2;
+  string usuario_id = 3;
+  // "repeated" é como uma lista [] no Python
+  repeated Musica musicas = 4; 
+}
+
+// Inputs para as requisições
+message RegistrarUsuarioRequest {
+  string email = 1;
+  string senha = 2;
+  string nome = 3;
+  int32 idade = 4;
+}
+
+message LoginRequest {
+  string email = 1;
+  string senha = 2;
+}
+
+message CriarMusicaRequest {
+  string nome = 1;
+  string artista = 2;
+}
+
+message CriarPlaylistRequest {
+  string nome = 1;
+  string usuario_id = 2;
+}
+
+message AdicionarMusicaRequest {
+  int32 playlist_id = 1;
+  int32 musica_id = 2;
+}
+
+message BuscaPorIdRequest {
+  int32 id = 1;
+}
+
+message BuscaPorUsuarioRequest {
+  string usuario_id = 1;
+}
+
+// Listas de Retorno
+message ListaUsuarios {
+  repeated Usuario usuarios = 1;
+}
+
+message ListaMusicas {
+  repeated Musica musicas = 1;
+}
+
+message ListaPlaylists {
+  repeated Playlist playlists = 1;
+}
+
+// --- DEFINIÇÃO DO SERVIÇO (RPCs) ---
+
+service StreamingService {
+  // Autenticação e Usuários
+  rpc RegistrarUsuario (RegistrarUsuarioRequest) returns (Usuario);
+  rpc Login (LoginRequest) returns (Usuario);
+  rpc ListarUsuarios (Empty) returns (ListaUsuarios);
+
+  // Músicas
+  rpc CriarMusica (CriarMusicaRequest) returns (Musica);
+  rpc ListarMusicas (Empty) returns (ListaMusicas);
+
+  // Playlists
+  rpc CriarPlaylist (CriarPlaylistRequest) returns (Playlist);
+  rpc AdicionarMusicaPlaylist (AdicionarMusicaRequest) returns (MensagemSucesso);
+  rpc ObterPlaylist (BuscaPorIdRequest) returns (Playlist);
+  rpc ListarPlaylistsUsuario (BuscaPorUsuarioRequest) returns (ListaPlaylists);
+  rpc ListarPlaylistsDaMusica (BuscaPorIdRequest) returns (ListaPlaylists);
+}
