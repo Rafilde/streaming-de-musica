@@ -10,3 +10,6 @@ lxml>=4.9.0
 a2wsgi>=1.10.0
 requests>=2.31.0
 locust  
+pandas 
+matplotlib 
+seaborn
