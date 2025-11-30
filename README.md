@@ -261,6 +261,7 @@ pip install -r requirements.txt
 
 **Rodar o código:**
 ```powershell
+.\venv\Scripts\activate
 python main.py
 ```
 
