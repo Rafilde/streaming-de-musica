@@ -5,7 +5,7 @@ from locust import HttpUser, SequentialTaskSet, task, between
 class FluxoUsuarioSoap(SequentialTaskSet):
     """
     Define o passo a passo sequencial para o SOAP.
-    Envia XML e faz parse da resposta com Regex para extrair os IDs gerados.
+    Envia XML e faz parse da resposta com Regex robusto para extrair os IDs gerados.
     """
     
     def on_start(self):
@@ -17,11 +17,13 @@ class FluxoUsuarioSoap(SequentialTaskSet):
         self.headers = {"Content-Type": "text/xml"}
 
     # ==========================================================================
-    # UTILITÁRIO: Extrair ID do XML (Regex é mais rápido que parser de XML)
+    # UTILITÁRIO: Extrair ID do XML (Regex Melhorado)
     # ==========================================================================
     def ler_id_do_xml(self, texto_xml):
-        match = re.search(r'(?:<tns:id>|<id>)(.*?)(?:</tns:id>|</id>)', texto_xml)
-        return match.group(1) if match else None
+        match = re.search(r'(?:<[\w:]*id>)(.*?)(?:<\/[\w:]*id>)', texto_xml)
+        if match:
+            return match.group(1)
+        return None
 
     # ==========================================================================
     # 01. CRIAR USUÁRIO
@@ -38,8 +40,8 @@ class FluxoUsuarioSoap(SequentialTaskSet):
               <tns:RegistrarUsuario>
                  <tns:email>{self.email}</tns:email>
                  <tns:senha>{self.password}</tns:senha>
-                 <tns:nome>Siwan SOAP {random_id}</tns:nome>
-                 <tns:idade>39</tns:idade>
+                 <tns:nome>User SOAP {random_id}</tns:nome>
+                 <tns:idade>30</tns:idade>
               </tns:RegistrarUsuario>
            </soapenv:Body>
         </soapenv:Envelope>
@@ -48,8 +50,10 @@ class FluxoUsuarioSoap(SequentialTaskSet):
         with self.client.post("/soap/", data=xml, headers=self.headers, name="01. SOAP - Registrar", catch_response=True) as response:
             if response.status_code == 200:
                 self.user_id = self.ler_id_do_xml(response.text)
+                if not self.user_id:
+                    print(f"[DEBUG SOAP] XML Retorno Registro: {response.text}")
             else:
-                pass
+                response.failure(f"Erro SOAP: {response.status_code}")
 
     # ==========================================================================
     # 02. LOGIN
@@ -82,8 +86,8 @@ class FluxoUsuarioSoap(SequentialTaskSet):
            <soapenv:Header/>
            <soapenv:Body>
               <tns:CriarMusica>
-                 <tns:nome>Beija-Flor SOAP {rand}</tns:nome>
-                 <tns:artista>Emicida</tns:artista>
+                 <tns:nome>Music SOAP {rand}</tns:nome>
+                 <tns:artista>Locust Band</tns:artista>
               </tns:CriarMusica>
            </soapenv:Body>
         </soapenv:Envelope>
