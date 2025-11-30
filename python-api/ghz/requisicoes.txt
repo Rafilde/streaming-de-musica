@@ -1,0 +1,29 @@
+POST
+.\ghz.exe --insecure --proto streaming.proto --call streaming.StreamingService.RegistrarUsuario -D ghz/registrar_usuario.json -n 2000 -c 50 localhost:50051
+
+POST
+.\ghz.exe --insecure --proto streaming.proto --call streaming.StreamingService.Login -D ghz/login.json -n 2000 -c 50 localhost:50051
+
+POST
+.\ghz.exe --insecure --proto streaming.proto --call streaming.StreamingService.CriarMusica -D ghz/criar_musica.json -n 2000 -c 50 localhost:50051
+
+GET
+.\ghz.exe --insecure --proto streaming.proto --call streaming.StreamingService.ListarMusicas -n 2000 -c 50 localhost:50051
+
+POST
+.\ghz.exe --insecure --proto streaming.proto --call streaming.StreamingService.CriarPlaylist -D ghz/criar_playlist.json -n 2000 -c 50 localhost:50051
+
+POST
+.\ghz.exe --insecure --proto streaming.proto --call streaming.StreamingService.AdicionarMusicaPlaylist -D ghz/add_musica.json -n 2000 -c 50 localhost:50051
+
+GET
+.\ghz.exe --insecure --proto streaming.proto --call streaming.StreamingService.ObterPlaylist -D ghz/buscar_playlist.json -n 2000 -c 50 localhost:50051
+
+GET
+.\ghz.exe --insecure --proto streaming.proto --call streaming.StreamingService.ListarPlaylistsUsuario -D ghz/listar_playlists_usuario.json -n 2000 -c 50 localhost:50051
+
+POST
+.\ghz.exe --insecure --proto streaming.proto --call streaming.StreamingService.ListarPlaylistsDaMusica -D ghz/buscar_playlist.json -n 2000 -c 50 localhost:50051
+
+GET
+.\ghz.exe --insecure --proto streaming.proto --call streaming.StreamingService.ListarUsuarios -n 2000 -c 50 localhost:50051

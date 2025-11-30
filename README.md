@@ -285,20 +285,34 @@ Abaixo, as tecnologias foram ordenadas da **mais simples para a mais complexa**,
 
 ### 5.2. Classificação de Complexidade de Implementação em Javascript
 
-### 5.3. Resultados dos Testes de Carga (Python)
+### 5.3. Resultados dos Testes de Carga (Análise Visual - Python)
 
-Para validar empiricamente as diferenças de desempenho entre os protocolos, realizamos testes de carga utilizando as ferramentas **Locust** (para REST, GraphQL e SOAP) e **ghz** (para gRPC).
+Abaixo, apresentamos os gráficos de latência média (tempo de resposta) para cada operação realizada durante o ciclo de vida do usuário. Os testes comparam **REST**, **GraphQL**, **SOAP** e **gRPC**.
 
-O cenário de teste simulou **50 usuários simultâneos** realizando operações de leitura e escrita (criar usuários, listar músicas, consultar playlists...) durante um período de 30 segundos.
+#### Cenários de Criação (Escrita)
+Nestes cenários, comparamos apenas os protocolos baseados em HTTP, pois o teste de escrita em massa no gRPC não foi realizado para evitar erros de integridade (duplicidade) no banco.
 
+**1. Criação de Usuário e Login:**
 ![Gráfico criar usuário](python-api/graficos_separados/01_criar_usuario.png)
 ![Gráfico login](python-api/graficos_separados/02_login.png)
+
+**2. Gestão de Músicas e Playlists:**
 ![Gráfico criar musica](python-api/graficos_separados/03_criar_musica.png)
-![Gráfico listar musica](python-api/graficos_separados/04_listar_musicas.png)
 ![Gráfico criar playlist](python-api/graficos_separados/05_criar_playlist.png)
-![Gráfico adicionar musica playlist](python-api/graficos_separados/06_add_musica_playlist.png)
+![Gráfico adicionar musica](python-api/graficos_separados/06_add_musica_playlist.png)
+
+---
+
+#### Cenários de Leitura
+Nestes gráficos, incluímos os resultados do **gRPC**. 
+
+**1. Listagens Gerais:**
+![Gráfico listar musica](python-api/graficos_separados/04_listar_musicas.png)
+![Gráfico listar usuários](python-api/graficos_separados/10_listar_todos_usuarios.png)
+
+**2. Consultas Complexas:**
 ![Gráfico ver playlist específica](python-api/graficos_separados/07_ver_playlist_especifica.png)
 ![Gráfico ver playlist do usuário](python-api/graficos_separados/08_playlists_do_usuario.png)
-![Gráfico ver playlist com a música](python-api/graficos_separados/09_playlists_com_a_musica.png)
-![Gráfico listar todos os usuários](python-api/graficos_separados/10_listar_todos_usuarios.png)
+![Gráfico ver playlists com a música](python-api/graficos_separados/09_playlists_com_a_musica.png)
+
 ---

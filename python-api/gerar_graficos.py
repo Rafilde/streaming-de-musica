@@ -9,6 +9,17 @@ import os
 DATA_DIR = "data"
 OUTPUT_DIR = "graficos_separados"
 
+# --- DADOS DO GRPC (COLETADOS MANUALMENTE VIA GHZ) ---
+# Aqui inserimos os valores de "Average" (em ms) que você obteve no terminal.
+# 1.41s = 1410ms | 1.40s = 1400ms | 1.31s = 1310ms | 1.39s = 1390ms
+DADOS_GRPC = {
+    "04. Listar Músicas": 1410,
+    "07. Ver Playlist Específica": 1400,
+    "08. Playlists do Usuário": 1310,
+    "10. Listar Todos Usuários": 1390
+}
+# -----------------------------------------------------
+
 if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
 
@@ -19,7 +30,7 @@ FILES = {
 }
 
 # ==============================================================================
-# 1. CARREGAMENTO E LIMPEZA INTELIGENTE
+# 1. CARREGAMENTO E LIMPEZA
 # ==============================================================================
 dfs = []
 
@@ -54,6 +65,9 @@ for protocol, filename in FILES.items():
         return nome_completo
 
     df["Cenario"] = df["Name"].apply(limpar_nome)
+    
+    # Mantém apenas colunas essenciais
+    df = df[["Cenario", "Protocolo", "Average Response Time"]]
     dfs.append(df)
 
 if not dfs:
@@ -63,10 +77,24 @@ if not dfs:
 df_final = pd.concat(dfs)
 
 # ==============================================================================
-# 2. GERAÇÃO INDIVIDUAL
+# 2. INSERIR DADOS DO GRPC (MANUALMENTE)
+# ==============================================================================
+grpc_rows = []
+for cenario, tempo in DADOS_GRPC.items():
+    grpc_rows.append({
+        "Cenario": cenario,
+        "Protocolo": "gRPC",
+        "Average Response Time": tempo
+    })
+
+# Junta o gRPC na tabela principal
+df_grpc = pd.DataFrame(grpc_rows)
+df_final = pd.concat([df_final, df_grpc], ignore_index=True)
+
+# ==============================================================================
+# 3. GERAÇÃO INDIVIDUAL
 # ==============================================================================
 
-# Pega a lista de cenários únicos ordenados
 cenarios = sorted(df_final["Cenario"].unique())
 
 print(f"🔄 Gerando gráficos para {len(cenarios)} cenários...")
@@ -74,29 +102,34 @@ print(f"🔄 Gerando gráficos para {len(cenarios)} cenários...")
 for cenario in cenarios:
     df_cenario = df_final[df_final["Cenario"] == cenario]
     
-    # Nome do arquivo limpo
     nome_arquivo = cenario.lower().replace(".", "").replace(" ", "_")
-    # Remove acentos do nome do arquivo para evitar problemas
     nome_arquivo = nome_arquivo.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("ã", "a").replace("ç", "c")
     
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(9, 6)) # Aumentei um pouco a largura
     sns.set_theme(style="whitegrid")
+    
+    # Define cores fixas para cada protocolo para manter consistência
+    cores = {
+        "REST": "#3498db",    # Azul
+        "GraphQL": "#e91e63", # Rosa
+        "SOAP": "#9b59b6",    # Roxo
+        "gRPC": "#2ecc71"     # Verde
+    }
     
     grafico = sns.barplot(
         data=df_cenario,
         x="Protocolo",
         y="Average Response Time",
-        palette="viridis"
+        palette=cores
     )
     
     for container in grafico.containers:
-        grafico.bar_label(container, fmt='%.0f ms', padding=3)
+        grafico.bar_label(container, fmt='%.0f ms', padding=3, fontsize=11, fontweight='bold')
 
     plt.title(f"Latência Média: {cenario}", fontsize=14, pad=15)
     plt.ylabel("Tempo (ms)", fontsize=12)
     plt.xlabel("") 
     
-    # Limite Y com margem
     if not df_cenario.empty:
         plt.ylim(0, df_cenario["Average Response Time"].max() * 1.2) 
     
@@ -107,4 +140,4 @@ for cenario in cenarios:
     
     print(f"✅ Salvo: {caminho_salvar}")
 
-print("\n🚀 Todos os gráficos foram corrigidos e gerados!")
+print("\n🚀 Todos os gráficos foram gerados (com gRPC incluído)!")
