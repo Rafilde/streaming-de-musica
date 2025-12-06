@@ -1,120 +1,125 @@
-from fastapi import FastAPI, HTTPException
-from typing import List 
-from schemas.auth_schema import UsuarioRegistro, UsuarioAutenticacao, UsuarioResposta
-from services.auth_service import autenticar_usuario, cadastrar_usuario, listar_todos_usuarios
-from schemas.music_schema import MusicaCadastro, MusicaResposta
-from services.music_service import cadastrar_musica, obter_todas_musicas
-from schemas.playlist_schema import (
-    PlaylistCadastro, 
-    AdicionarMusicaPlaylist, 
-    PlaylistCompleta, 
-    PlaylistResposta
+import asyncio
+from a2wsgi import WSGIMiddleware
+import uvicorn
+import grpc
+from concurrent import futures
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from strawberry.fastapi import GraphQLRouter
+from schemas.GRAPHQL.graphql_schema import schema
+from routers.auth_router import router as auth_router
+from routers.music_router import router as music_router
+from routers.playlist_router import router as playlist_router
+from schemas.GRPC import streaming_pb2_grpc
+from routers.grpc_servicer import StreamingServicer
+from routers.soap_service import wsgi_app as soap_app 
+
+# ============================================================================
+# Inicializar aplicação
+# ============================================================================
+
+app = FastAPI(
+    title="API Streaming Music",
+    description="Backend Híbrido: REST, GraphQL, gRPC e SOAP",
+    version="3.0.0"
 )
-from services.playlist_service import (
-    criar_playlist_servico, 
-    adicionar_musica_servico,
-    obter_playlist_detalhada,        
-    listar_playlists_usuario_com_musicas, listar_playlists_com_musica 
+
+# ============================================================================
+# Middleware CORS
+# ============================================================================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-app = FastAPI(title="API Streaming Music")
+# ============================================================================
+# Integrar GraphQL
+# ============================================================================
 
-@app.post("/auth/register", response_model=UsuarioResposta)
-def cadastro(user: UsuarioRegistro):
-    try:
-        resultado = cadastrar_usuario(
-            email=user.email,
-            senha=user.senha,
-            nome=user.nome,
-            idade=user.idade
-        )
+graphql_app = GraphQLRouter(schema, path="/graphql")
+app.include_router(graphql_app)
 
-        return UsuarioResposta(
-            status="Success",
-            mensagem="Usuário criado com sucesso",
-            dado=resultado
-        )
+# ============================================================================
+# Integrar Routers REST
+# ============================================================================
 
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+app.include_router(auth_router)
+app.include_router(music_router)
+app.include_router(playlist_router)
 
-@app.post("/auth/login", response_model=UsuarioResposta)
-def login(user: UsuarioAutenticacao):
-    try:
-        resultado = autenticar_usuario(
-            email=user.email,
-            senha=user.senha
-        )
+# ============================================================================
+# Integrar Routers SOAP
+# ============================================================================
 
-        return UsuarioResposta(
-            status="Success",
-            mensagem="Login realizado",
-            dado=resultado
-        )
+app.mount("/soap", WSGIMiddleware(soap_app))
 
-    except Exception as e:
-        raise HTTPException(status_code=401, detail="Email ou senha inválidos")
+# ============================================================================
+# Rota raiz
+# ============================================================================
+
+@app.get("/")
+def root():
+    """
+    Raiz da API - Bem-vindo!
     
-@app.get("/usuarios/{usuario_id}/playlists_detalhadas", response_model=List[PlaylistCompleta])
-def ver_playlists_do_usuario(usuario_id: str):
-    try:
-        return listar_playlists_usuario_com_musicas(usuario_id)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    Acesse:
+    - REST Docs: http://localhost:8000/docs
+    - GraphQL: http://localhost:8000/graphql
+    - ReDoc: http://localhost:8000/redoc
+    """
+    return {
+        "mensagem": "Bem-vindo à API Streaming Music",
+        "endpoints": {
+            "docs_swagger": "http://localhost:8000/docs",
+            "graphql": "http://localhost:8000/graphql",
+            "redoc": "http://localhost:8000/redoc",
+            "autenticacao": "/auth",
+            "musicas": "/musicas",
+            "playlists": "/playlists"
+        }
+    }
 
-@app.get("/usuarios", response_model=List[dict]) 
-def get_todos_usuarios():
+# ============================================================================
+# Integrar Servidor gRPC
+# ============================================================================
+
+async def iniciar_grpc():
+    server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
+    streaming_pb2_grpc.add_StreamingServiceServicer_to_server(StreamingServicer(), server)
+    server.add_insecure_port('[::]:50051')
+    print("🚀 Servidor gRPC rodando em localhost:50051")
+    await server.start()
     try:
-        return listar_todos_usuarios()
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        await server.wait_for_termination()
+    except asyncio.CancelledError:
+        print("🛑 Parando servidor gRPC...")
+        await server.stop(0)
+
+async def main():
+    task_grpc = asyncio.create_task(iniciar_grpc())
     
-#---------------------------------------------------------------------------------------------------------------
-
-@app.post("/musicas", response_model=MusicaResposta)
-def criar_musica(musica: MusicaCadastro):
-    try:
-        return cadastrar_musica(musica.nome, musica.artista)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@app.get("/musicas", response_model=List[MusicaResposta])
-def listar_musicas():
-    try:
-        return obter_todas_musicas()
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
+    server = uvicorn.Server(config)
     
-@app.get("/musicas/{musica_id}/playlists", response_model=List[PlaylistResposta])
-def get_playlists_da_musica(musica_id: int):
-    try:
-        return listar_playlists_com_musica(musica_id)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    print("🚀 Servidor REST/GraphQL/SOAP rodando em localhost:8000")
     
-#---------------------------------------------------------------------------------------------------------------
-
-@app.post("/playlists")
-def criar(p: PlaylistCadastro):
+    task_fastapi = asyncio.create_task(server.serve())
+    
     try:
-        return criar_playlist_servico(p.nome, p.usuario_id)
-    except Exception as e:
-        raise HTTPException(400, str(e))
+        await asyncio.gather(task_grpc, task_fastapi)
+    except Exception:
+        pass
+    finally:
+        if not task_grpc.done():
+            task_grpc.cancel()
+        await task_grpc
 
-@app.post("/playlists/adicionar")
-def add_musica(d: AdicionarMusicaPlaylist):
+if __name__ == "__main__":
     try:
-        adicionar_musica_servico(d.playlist_id, d.musica_id)
-        return {"status": "OK", "mensagem": "Adicionado!"}
-    except Exception as e:
-        raise HTTPException(400, str(e))
-
-@app.get("/playlists/{playlist_id}", response_model=PlaylistCompleta)
-def ver_playlist(playlist_id: int):
-    try:
-        resultado = obter_playlist_detalhada(playlist_id)
-        if not resultado:
-            raise HTTPException(status_code=404, detail="Playlist não encontrada")
-        return resultado
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\nDesligando servidores...")
